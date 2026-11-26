@@ -1,33 +1,40 @@
-POST http://localhost:3333/events
+@baseUrl = http://localhost:3333
+
+### Check API health
+GET {{baseUrl}}/healthz
+
+### Create an event
+# @name createEvent
+POST {{baseUrl}}/events
 Content-Type: application/json
 
 {
-  "title": 123,
-  "details": null,
-  "maximumAttendees": 1
+  "title": "Community meetup {{$timestamp}}",
+  "details": "A local event for the pass.in demo",
+  "maximumAttendees": 20
 }
 
-###
-
-POST http://localhost:3333/events/81a3f6db-45bf-4a6f-b10c-bcaf8837ac43/attendees
+### Register an attendee
+@eventId = {{createEvent.response.body.$.eventId}}
+# @name registerAttendee
+POST {{baseUrl}}/events/{{eventId}}/attendees
 Content-Type: application/json
 
 {
-  "name": "Diego Fernandes",
-  "email": "diego2@rocketseat.com.br"
+  "name": "Alex Rivera",
+  "email": "alex@example.com"
 }
 
-###
+### Get the event
+GET {{baseUrl}}/events/{{eventId}}
 
-GET http://localhost:3333/events/81a3f6db-45bf-4a6f-b10c-bcaf8837ac43
+### Get the attendee badge
+@attendeeId = {{registerAttendee.response.body.$.attendeeId}}
+# @name getBadge
+GET {{baseUrl}}/attendees/{{attendeeId}}/badge
 
-###
+### Check in the attendee using the badge URL
+GET {{getBadge.response.body.$.badge.checkInURL}}
 
-GET http://localhost:3333/attendees/3/badge
-###
-
-GET http://localhost:3333/attendees/4/check-in
-
-###
-
-GET http://localhost:3333/events/81a3f6db-45bf-4a6f-b10c-bcaf8837ac43/attendees?query=diego
+### List the event's attendees
+GET {{baseUrl}}/events/{{eventId}}/attendees?query=Alex&pageIndex=0
